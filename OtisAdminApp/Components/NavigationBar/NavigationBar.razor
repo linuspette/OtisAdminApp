@@ -1,0 +1,17 @@
+﻿<NavigationBarStyle />
+
+<MudDrawerHeader>
+    <MudText Typo="Typo.h4">Menu</MudText>
+    <MudSpacer/>
+    <MudIconButton Icon="@Icons.Material.Filled.Menu" Edge="Edge.End" OnClick="@((e) => OnClick.InvokeAsync())"/>
+</MudDrawerHeader>
+<MudNavMenu>
+    <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
+        <MudText Class="menuItem">Dashboard</MudText>
+    </MudNavLink>
+</MudNavMenu>
+
+@code {
+    [Parameter] public EventCallback OnClick { get; set; }
+
+}

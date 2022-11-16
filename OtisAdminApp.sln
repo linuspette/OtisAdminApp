@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33103.184
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtisAdminApp", "OtisAdminApp\OtisAdminApp.csproj", "{09FDC3C8-0887-4C66-A16C-124BC555AE08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OtisAdminApp", "OtisAdminApp\OtisAdminApp.csproj", "{09FDC3C8-0887-4C66-A16C-124BC555AE08}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
