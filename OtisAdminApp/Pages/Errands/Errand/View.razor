@@ -1,0 +1,37 @@
+﻿@page "/errands/errand/{errandNumber}"
+
+@inject IErrandDataService errandDataService
+
+@if (isLoading)
+{
+    <MudProgressCircular Color="Color.Info" Indeterminate="true" Size="Size.Large"/>
+}
+else
+{
+    @if (!string.IsNullOrEmpty(ErrandNumber))
+    {
+        <MudPaper>
+
+        </MudPaper>
+    }
+    else
+    {
+        <MudText>Errand could not be found.</MudText>
+    }
+}
+
+@code {
+    public bool isLoading = false;
+    public string? ErrandNumber { get; set; }
+
+    public ErrandViewModel Errand { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        if(!string.IsNullOrEmpty(ErrandNumber))
+            Errand = await errandDataService.GetErrand(ErrandNumber);
+
+        isLoading = false;
+    }
+}

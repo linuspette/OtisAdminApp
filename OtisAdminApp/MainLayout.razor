@@ -1,9 +1,29 @@
 ﻿@inherits LayoutComponentBase
 
-<main>
-    @Body
-</main>
-
-<MudThemeProvider />
+<MudThemeProvider IsDarkMode="true"/>
 <MudDialogProvider />
 <MudSnackbarProvider />
+<DrawerStyle/>
+
+
+<MudLayout>
+    @if (!drawerOpen)
+    {
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="DrawerToggle" Class="menuButton-closedDrawer"/>
+    }
+    <MudDrawer @bind-Open="@drawerOpen" Color="Color.Surface" Class="drawerMain">
+            <NavigationBar OnClick="DrawerToggle"/>
+    </MudDrawer>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code{
+    bool drawerOpen = true;
+
+    public void DrawerToggle()
+    {
+        drawerOpen = !drawerOpen;
+    }
+}

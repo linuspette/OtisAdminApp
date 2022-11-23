@@ -1,0 +1,69 @@
+﻿@page "/errands/add/"
+@page "/errands/add/{DeviceId}"
+
+@inject IElevatorDataService elevatorDataService
+@inject IEmployeeDataService employeeDataService
+
+@if(isLoading)
+{
+    <MudProgressCircular Color="Color.Info" Indeterminate="true" Size="Size.Large"/>
+}
+else
+{
+    <MudPaper>
+        <MudForm Model="@UserInput" @ref="@form" Validation="@(errandInputValidator.ValidateValue)" ValidationDelay="0">
+            <MudTextField @bind-Value="@UserInput.Title" Variant="Variant.Text"/>
+            <MudSelect T="Guid" Label="Elevator" AnchorOrigin="Origin.BottomCenter">
+                @foreach (var elevator in Elevators)
+                {
+                    <MudSelectItem T="Guid" Value="@elevator.Id"/>
+                }
+            </MudSelect>
+            <MudSelect T="EmployeeViewModel" Label="Assign employees" @bind-SelectedValues="selectedEmployees" MultiSelection="true" >
+                @foreach(var employee in Employees)
+                {
+                    <MudSelectItem T="EmployeeViewModel" Value="@employee" >@employee.FullName: @employee.EmployeeNumber</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudButton OnClick="@(async () => await OnSubmit())">Create Errand</MudButton>
+        </MudForm>
+    </MudPaper>
+}
+
+@code {
+    [Parameter] public string? DeviceId { get; set; }
+
+    bool isLoading = false;
+
+    MudForm? form;
+
+    //Declares user input-variable
+    public ErrandInputModel UserInput = new ErrandInputModel();
+
+    //Gets selectable values for select-list
+    List<ElevatorViewModel> Elevators = new List<ElevatorViewModel>();
+    List<EmployeeViewModel> Employees = new List<EmployeeViewModel>();
+
+    private IEnumerable<EmployeeViewModel> selectedEmployees { get; set; } = new HashSet<EmployeeViewModel>();
+
+    //Fluent validators
+    ErrandInputModelFluentValidator errandInputValidator = new ErrandInputModelFluentValidator();
+    ErrandUpdatesInputModelFluentValidator errandUpdateValidator = new ErrandUpdatesInputModelFluentValidator();
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        Elevators = await elevatorDataService.GetAllElevatorsAsync();
+        if (!string.IsNullOrEmpty(DeviceId))
+            UserInput.ElevatorId = Guid.Parse(DeviceId);
+
+        Employees = await employeeDataService.GetAllEmployeesAsync();
+        isLoading = false;
+    }
+
+    private async Task OnSubmit()
+    {
+        
+    }
+}

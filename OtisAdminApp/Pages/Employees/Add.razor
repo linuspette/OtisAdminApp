@@ -1,0 +1,44 @@
+﻿@page "/employees/add"
+@inject IEmployeeDataService employeeDataService
+@inject NavigationManager navManager
+
+<MudPaper Elevation="0" Class="mx-auto pa-4 m-4">
+    <MudForm Model="@UserInput" @ref="@form" Validation="@(fluentValidation.ValidateValue)" ValidationDelay="0">
+        <MudGrid>
+            <MudItem xs="6"><MudTextField @bind-Value="@UserInput.FirstName"
+                                          For="@(() => UserInput.FirstName)"
+                                          Immediate="true"
+                                          Label="First Name" />
+            </MudItem>
+            <MudItem xs="6"><MudTextField @bind-Value="@UserInput.LastName"
+                                          For="@(() => UserInput.LastName)"
+                                          Immediate="true"
+                                          Label="Last Name"/>
+            </MudItem>
+            <MudItem xs="12"><MudTextField @bind-Value="@UserInput.EmployeeNumber"
+                                           For="@(() => UserInput.EmployeeNumber)"
+                                           Immediate="true"
+                                           Label="Employee number"/>
+            </MudItem>
+            <MudItem xs="12"><MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="@(async () => await OnSubmit())">
+                Save Employee
+            </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudForm>
+</MudPaper>
+@code {
+    public EmployeeInputModel UserInput { get; set; } = new EmployeeInputModel();
+
+    MudForm? form;
+    EmployeeInputModelFluentValidation fluentValidation = new EmployeeInputModelFluentValidation();
+
+    public async Task OnSubmit()
+    {
+        UserInput.SetFullName();
+        var result = await employeeDataService.SaveEmployeeAsync(UserInput);
+
+        if (result)
+            navManager.NavigateTo("./employees/view");
+    }
+}
