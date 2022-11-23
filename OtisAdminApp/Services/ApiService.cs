@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using System.Net.Http.Json;
+using System.Text;
 
 namespace OtisAdminApp.Services;
 
@@ -45,9 +45,10 @@ public class ApiService : IApiService
     {
         try
         {
-            string jsonObject = JsonConvert.SerializeObject(data);
+            var request = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
-            var result = await _httpClient.PostAsJsonAsync($"{_baseAdress}{apiRoute}", jsonObject);
+
+            var result = await _httpClient.PostAsync(_baseAdress + apiRoute, request);
 
             return await result.Content.ReadAsStringAsync();
         }

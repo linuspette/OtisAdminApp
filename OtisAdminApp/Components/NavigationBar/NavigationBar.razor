@@ -1,4 +1,6 @@
-﻿<NavigationBarStyle />
+﻿@inject ILinkService linkService
+
+<NavigationBarStyle />
 
 <MudDrawerHeader>
     <MudText Typo="Typo.h4">Menu</MudText>
@@ -6,9 +8,19 @@
     <MudIconButton Icon="@Icons.Material.Filled.Menu" Edge="Edge.End" OnClick="@((e) => OnClick.InvokeAsync())"/>
 </MudDrawerHeader>
 <MudNavMenu>
-    <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
+    <MudNavLink Href="./" Icon="@Icons.Material.Filled.Dashboard">
         <MudText Class="menuItem">Dashboard</MudText>
     </MudNavLink>
+    <MudNavLink Href="@linkService.ShowElevators()" Icon="@Icons.Material.Filled.Elevator">
+        <MudText Class="menuItem">Elevators</MudText>
+    </MudNavLink>
+    <MudNavLink Href="@linkService.ViewErrands()" Icon="@Icons.Material.Filled.Assessment">
+        <MudText Class="menuItem">Errands</MudText>
+    </MudNavLink>
+    <MudNavLink Href="@linkService.ViewEmployees()" Icon="@Icons.Material.Filled.Accessibility">
+            <MudText Class="menuItem">Employees</MudText>
+        </MudNavLink>
+
 </MudNavMenu>
 
 @code {

@@ -1,0 +1,81 @@
+﻿@page "/Elevators/Elevator/View/{DeviceId}"
+@inject IElevatorDataService elevatorDataService
+@inject IDialogService dialogService
+
+@if (isLoading)
+{
+    <MudProgressCircular Color="Color.Info" Indeterminate="true" Size="Size.Large"/>
+}
+else
+{
+    <MudPaper>
+    <MudCard>
+        <MudCardMedia Image="/lib/images/elevator.jpg" Height="200"/>
+        <MudCardHeader>
+            <MudText Typo="Typo.h6">@Elevator.Id</MudText>
+        </MudCardHeader>
+        <MudCardContent>
+            @if (Elevator != null)
+            {
+
+            <ErrandTable_Component DeviceId="@Elevator.Id.ToString()" Errands="@Elevator.Errands"/>
+
+            }                
+            else
+            {
+                <MudText Typo="Typo.h6">No errands have been found</MudText>
+            }
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton StartIcon="@Icons.Material.Filled.Add" Color="Color.Info">Create Errand</MudButton>
+            <MudButton StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" OnClick="ShowInfoDialog">More information</MudButton>
+        </MudCardActions>
+    </MudCard>
+</MudPaper>
+}
+
+@code {
+    [Parameter]
+    public string? DeviceId { get; set; } = null!;
+
+    public ElevatorViewModel Elevator { get; set; } = new ElevatorViewModel();
+
+    bool isLoading = false;
+
+    private async Task ShowInfoDialog()
+    {
+        if (Elevator == null)
+        {
+            await LoadData();
+        }
+
+        var options = new DialogOptions
+            {
+                CloseButton = true,
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Medium,
+                Position = DialogPosition.Center,
+                FullWidth = true
+            };
+        var parameters = new DialogParameters();
+        parameters.Add("Elevator", Elevator);
+
+        dialogService.Show<ElevatorInfo_Dialog>("Additional information", parameters, options);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        await LoadData();
+        isLoading = false;
+
+    }
+
+    private async Task LoadData()
+    {
+        if (DeviceId != null)
+        {
+            Elevator = await elevatorDataService.GetElevatorAsync(DeviceId);
+        }
+    }
+}

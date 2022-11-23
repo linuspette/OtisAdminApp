@@ -1,11 +1,13 @@
 ﻿using Newtonsoft.Json;
+using OtisAdminApp.Models.InputModels.Users;
 using OtisAdminApp.Models.ViewModels.Users;
 
 namespace OtisAdminApp.Services;
 
 public interface IEmployeeDataService
 {
-
+    public Task<List<EmployeeViewModel>> GetAllEmployeesAsync();
+    public Task<bool> SaveEmployeeAsync(EmployeeInputModel userInput);
 }
 public class EmployeeDataService : IEmployeeDataService
 {
@@ -20,9 +22,26 @@ public class EmployeeDataService : IEmployeeDataService
     {
         var result = await _apiService.GetAsync("employees/getemployees", null);
 
-        if (result != null)
-            return JsonConvert.DeserializeObject<List<EmployeeViewModel>>(result)!;
+        return JsonConvert.DeserializeObject<List<EmployeeViewModel>>(result) ?? null!;
+    }
 
-        return null!;
+    public async Task<bool> SaveEmployeeAsync(EmployeeInputModel userInput)
+    {
+        var result = await _apiService.PostAsync("Employees/add", new EmployeePost
+        {
+            EmployeeNumber = userInput.EmployeeNumber,
+            FullName = $"{userInput.FirstName} {userInput.LastName}"
+        });
+
+        if (result == "0")
+            return true;
+
+        return false;
+    }
+
+    private class EmployeePost
+    {
+        public int EmployeeNumber { get; set; }
+        public string FullName { get; set; } = null!;
     }
 }

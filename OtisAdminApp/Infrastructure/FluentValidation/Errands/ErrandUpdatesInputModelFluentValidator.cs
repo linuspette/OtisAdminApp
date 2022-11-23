@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using OtisAdminApp.Models.InputModels.Errands;
 
-namespace OtisAdminApp.Infrastructure.FluentValidation;
+namespace OtisAdminApp.Infrastructure.FluentValidation.Errands;
 
 public class ErrandUpdatesInputModelFluentValidator : AbstractValidator<ErrandUpdateInputModel>
 {

@@ -1,0 +1,63 @@
+﻿@using Newtonsoft.Json;
+@inject IEmployeeDataService employeeDataService
+@inject NavigationManager navManager
+@inject ILinkService linkService
+
+<MudButton Variant="Variant.Filled" Color="Color.Info" StartIcon="@Icons.Material.Filled.Add" OnClick="RedirectToAddEmployee">Add Employee</MudButton>
+@if (Employees != null && Employees.Count > 0)
+{
+    <MudTable Elevation="0" T="EmployeeViewModel" Items="Employees" Hover="true" Dense="true" Filter="new Func<EmployeeViewModel, bool>(FilterToTable)">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Employess</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="@_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>Employee number</MudTh>
+            <MudTh>Full name</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Employee Number">
+                @context.EmployeeNumber
+            </MudTd>
+            <MudTd DataLabel="FullName">@context.FullName</MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+}
+
+@code {
+    public List<EmployeeViewModel> Employees { get; set; } = new List<EmployeeViewModel>();
+
+    private string _searchString = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Employees = await employeeDataService.GetAllEmployeesAsync();
+            Employees = Employees.OrderBy(x => x.EmployeeNumber).ToList();
+        }
+        catch { }
+    }
+
+    private bool FilterToTable(EmployeeViewModel employee) => FilterFunction(employee, _searchString);
+    private bool FilterFunction(EmployeeViewModel employee, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (employee.EmployeeNumber.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (employee.FullName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    }
+
+    public void RedirectToAddEmployee()
+    {
+        navManager.NavigateTo(linkService.AddEmployee());
+    }
+}
