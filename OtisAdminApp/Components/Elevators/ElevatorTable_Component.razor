@@ -2,40 +2,51 @@
 @inject IElevatorDataService elevatorDataService
 @inject ILinkService linkService
 
-@if (Elevators.Count > 0)
+@if (isLoading)
 {
-    <MudTable Elevation="0" T="ElevatorViewModel" Items="Elevators" Hover="true" Dense="true" Filter="new Func<ElevatorViewModel, bool>(FilterToTable)">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">Elevators</MudText>
-            <MudSpacer />
-            <MudTextField @bind-Value="@_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
-        </ToolBarContent>
-        <HeaderContent>
-            <MudTh>Id</MudTh>
-            <MudTh>Location</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="Id">
-                <MudLink Href="@linkService.ShowElevatorInformationPage(context.Id.ToString())" Color="Color.Info">
-                    @context.Id
-                </MudLink>
-            </MudTd>
-            <MudTd DataLabel="Location">@context.Location</MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager />
-        </PagerContent>
-    </MudTable>
+    <MudProgressCircular Color="Color.Info" Indeterminate="true" Size="Size.Large" />
+}
+else
+{
+    @if (Elevators.Count > 0)
+    {
+        <MudTable Elevation="0" T="ElevatorViewModel" Items="Elevators" Hover="true" Dense="true" Filter="new Func<ElevatorViewModel, bool>(FilterToTable)">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Elevators</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="@_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Id</MudTh>
+                <MudTh>Location</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Id">
+                    <MudLink Href="@linkService.ShowElevatorInformationPage(context.Id.ToString())" Color="Color.Info">
+                        @context.Id
+                    </MudLink>
+                </MudTd>
+                <MudTd DataLabel="Location">@context.Location</MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
 }
 
 @code {
     public List<ElevatorViewModel> Elevators { get; set; } = new List<ElevatorViewModel>();
 
     private string _searchString = "";
+    private bool isLoading = false;
+
 
     protected override async Task OnInitializedAsync()
     {
+        isLoading = true;
         Elevators = await elevatorDataService.GetAllElevatorsAsync();
+        isLoading = false;
     }
 
     private bool FilterToTable(ElevatorViewModel elevator) => FilterFunction(elevator, _searchString);
