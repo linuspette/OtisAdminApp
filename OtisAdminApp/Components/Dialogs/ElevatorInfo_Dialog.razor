@@ -1,0 +1,17 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudTextField T="string" ReadOnly="true" Label="@($"Elevator Id: {@Elevator.Id}")"/>
+        <MudTextField T="string" ReadOnly="true" Color="" Label="@($"Location: {@Elevator.Location}")"/>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public ElevatorViewModel Elevator { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        if (Elevator == null)
+            MudDialog.Close();
+    }
+}

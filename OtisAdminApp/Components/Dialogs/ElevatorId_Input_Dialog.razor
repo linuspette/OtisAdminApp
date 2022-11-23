@@ -1,0 +1,13 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6">Please enter elevator id</MudText>
+        <MudTextField @bind-Value="deviceIdInput"/>
+    </DialogContent>
+</MudDialog>
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; } = null!;
+    string deviceIdInput = "";
+
+    void submit() => MudDialog.Close(DialogResult.Ok(deviceIdInput)); 
+}

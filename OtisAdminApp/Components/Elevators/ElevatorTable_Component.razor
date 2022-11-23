@@ -1,0 +1,53 @@
+﻿@using Newtonsoft.Json;
+@inject IElevatorDataService elevatorDataService
+@inject ILinkService linkService
+
+@if (Elevators.Count > 0)
+{
+    <MudTable Elevation="0" T="ElevatorViewModel" Items="Elevators" Hover="true" Dense="true" Filter="new Func<ElevatorViewModel, bool>(FilterToTable)">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Elevators</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="@_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>Location</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Id">
+                <MudLink Href="@linkService.ShowElevatorInformationPage(context.Id.ToString())" Color="Color.Info">
+                    @context.Id
+                </MudLink>
+            </MudTd>
+            <MudTd DataLabel="Location">@context.Location</MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+}
+
+@code {
+    public List<ElevatorViewModel> Elevators { get; set; } = new List<ElevatorViewModel>();
+
+    private string _searchString = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Elevators = await elevatorDataService.GetAllElevatorsAsync();
+    }
+
+    private bool FilterToTable(ElevatorViewModel elevator) => FilterFunction(elevator, _searchString);
+    private bool FilterFunction(ElevatorViewModel elevator, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (elevator.Id.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (elevator.Location.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    }
+}
