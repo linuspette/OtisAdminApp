@@ -9,6 +9,7 @@ public interface IErrandDataService
     public Task<List<ErrandViewModel>> GetAllElevatorErrands(string deviceId = null!);
     public Task<ErrandViewModel> GetErrand(string errandNumber);
     public Task<ErrandViewModel> PostErrandAsync(ErrandInputModel userInput);
+    public Task<bool> PostErrandUpdateAsync(ErrandUpdateInputModel userInput);
 }
 public class ErrandDataService : IErrandDataService
 {
@@ -41,18 +42,21 @@ public class ErrandDataService : IErrandDataService
 
     public async Task<ErrandViewModel> PostErrandAsync(ErrandInputModel userInput)
     {
-        var result = await _apiService.PostAsync("errands/createerrand", new
-        {
-            title = userInput.Title,
-            elevatorId = userInput.ElevatorId,
-            errandUpdates = new
-            {
-                status = userInput.ErrandUpdates.First().Status,
-                message = userInput.ErrandUpdates.First().Message,
-            },
-            isResolved = userInput.IsResolved
-        });
+        var result = await _apiService.PostAsync("errands/createerrand", JsonConvert.SerializeObject(userInput));
 
         return JsonConvert.DeserializeObject<ErrandViewModel>(result) ?? null!;
+    }
+
+    public async Task<bool> PostErrandUpdateAsync(ErrandUpdateInputModel userInput)
+    {
+        var result = await _apiService.PostAsync("errands/updateerrand", JsonConvert.SerializeObject(userInput));
+
+        if (!string.IsNullOrEmpty(result))
+        {
+            if (result == "0")
+                return true;
+        }
+
+        return false;
     }
 }

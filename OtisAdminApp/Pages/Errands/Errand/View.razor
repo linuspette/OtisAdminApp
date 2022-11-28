@@ -1,37 +1,205 @@
-﻿@page "/errands/errand/{errandNumber}"
+﻿@page "/errands/errand/view/{ErrandNumber}";
 
-@inject IErrandDataService errandDataService
+@inject IEmployeeDataService employeeDataService;
+@inject IErrandDataService errandDataService;
+@inject ISnackbar snackbar;
 
-@if (isLoading)
-{
-    <MudProgressCircular Color="Color.Info" Indeterminate="true" Size="Size.Large"/>
-}
-else
-{
-    @if (!string.IsNullOrEmpty(ErrandNumber))
+<MudPaper Class="mr-4 ml-4">
+    @if (isLoading)
     {
-        <MudPaper>
-
-        </MudPaper>
+        <MudProgressCircular Color="Color.Info" Indeterminate="true" Size="Size.Large" />
     }
     else
     {
-        <MudText>Errand could not be found.</MudText>
+        @if (!string.IsNullOrEmpty(ErrandNumber))
+        {
+            <MudGrid Class="pa-4">
+                <!--Errand number field-->
+                <MudItem xs="6">
+                    <MudTextField Label="Errand Number" ReadOnly="true" Value="@Errand.ErrandNumber" Variant="Variant.Outlined"></MudTextField>
+                </MudItem>
+                <!--Tech field-->
+                <MudItem xs="6">
+                    <MudExpansionPanels>
+                        <MudExpansionPanel Text="Assigned Technicians">
+                            @if (Errand.AssignedTechnicians != null && Errand.AssignedTechnicians.Count > 0)
+                            {
+                                foreach (var employe in Errand.AssignedTechnicians)
+                                {
+                                    <MudText Typo="Typo.body1">@(employe.EmployeeNumber): @employe.FullName</MudText>
+                                }
+                            }
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+                </MudItem>
+                <!--Status field-->
+                <MudItem xs="6">
+                    <MudTextField Label="Status" ReadOnly="true" Value="@Errand.ErrandUpdates.First().Status" Variant="Variant.Text"></MudTextField>
+                </MudItem>
+                <!--Errand status field-->
+                <MudItem xs="6">
+                    <MudItem Class="pa-8">
+                        <MudGrid>
+                            <MudItem xs="3">
+                                <MudText>Errand Status:</MudText>
+                            </MudItem>
+                            <MudItem Class="d-flex align-content-center justify-content-start" xs="9">
+                                @if (Errand.IsResolved)
+                                {
+
+                                    <MudText>Resolved</MudText>
+                                }
+                                else
+                                {
+
+                                    <MudText>Not Resolved</MudText>
+                                }
+                            </MudItem>
+                        </MudGrid>
+                    </MudItem>
+                </MudItem>
+
+                <!--Errand updates-->
+                <MudItem xs="6" Class="d-flex flex-column">
+                    <MudText Typo="Typo.h6">Errand Updates</MudText>
+                    <MudCard Class="pt-8 mt-8 overflow-scroll" Style="max-height: 50%; width: 100%;">
+                        <MudCardHeader>
+
+                            <MudDivider />
+                        </MudCardHeader>
+                        <MudCardContent>
+                            @foreach (var update in Errand.ErrandUpdates)
+                            {
+                                <MudCard Class="pt-4 mt-4" Style="background-color: rgba(255, 255, 255, 0.1)">
+                                    <MudCardHeader>
+                                        <MudText Typo="Typo.subtitle2">@update.DateOfUpdate</MudText>
+                                        <MudDivider />
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.caption" Color="Color.Default">Status set: @update.Status</MudText>
+                                        <MudText Typo="Typo.body1" Color="Color.Default">@update.Message</MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            }
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+                <!--Update form-->
+                <MudItem xs="6" Class="overflow-hidden object-contain">
+                    <MudForm Class="d-block overflow-hidden object-contain" Style="max-height: 50%;" Model="@UserInput" @ref="@form" Validation="@(errandUpdateValidator.ValidateValue)" ValidationDelay="0">
+                        <MudSelect Class="mt-4" T="EmployeeViewModel" Label="Assign employees" @bind-Value="@Value" ToStringFunc="Converter" @bind-SelectedValues="selectedEmployees" MultiSelection="true">
+                            @foreach (var employee in Employees)
+                            {
+                                <MudSelectItem T="EmployeeViewModel" Value="@(employee)">@employee.FullName: @employee.EmployeeNumber</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudSelect Class="mt-4" T="string" Label="Status" @bind-Value="@UserInput.Status" AnchorOrigin="Origin.BottomCenter">
+                            @foreach (var status in Statuses)
+                            {
+                                <MudSelectItem Value="@status">@status</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudTextField Class="mt-4" Label="Thorough description" @bind-Value="@UserInput.Message" Lines="8" />
+                        <MudButton Class="mt-4" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Info" OnClick="@(async () => await OnSubmit())">Update Errand</MudButton>
+                    </MudForm>
+                </MudItem>
+            </MudGrid>
+        }
+        else
+        {
+            <MudText>Errand could not be found</MudText>
+        }
     }
-}
-
+</MudPaper>
 @code {
-    public bool isLoading = false;
-    public string? ErrandNumber { get; set; }
+    [Parameter] public string? ErrandNumber { get; set; }
 
+    MudForm? form;
+    public bool isLoading = false;
+
+    private EmployeeViewModel Value { get; set; } = new EmployeeViewModel();
     public ErrandViewModel Errand { get; set; } = null!;
+    public ErrandUpdateInputModel UserInput { get; set; } = new ErrandUpdateInputModel();
+    List<EmployeeViewModel> Employees = new List<EmployeeViewModel>();
+    List<string> Statuses = new List<string>();
+
+    private IEnumerable<EmployeeViewModel> selectedEmployees { get; set; } = new HashSet<EmployeeViewModel>();
+
+    //Fluent Validator
+    ErrandUpdatesInputModelFluentValidator errandUpdateValidator = new ErrandUpdatesInputModelFluentValidator();
+
 
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
-        if(!string.IsNullOrEmpty(ErrandNumber))
-            Errand = await errandDataService.GetErrand(ErrandNumber);
-
+        StateHasChanged();
+        await LoadDataAsync();
         isLoading = false;
+        StateHasChanged();
+
+        await Timer_LoadDataAsync();
     }
+    //Reloads data every 30 seconds
+    private async Task Timer_LoadDataAsync()
+    {
+        while (true)
+        {
+            await Task.Delay(30000);
+            await LoadDataAsync();
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        if (!string.IsNullOrEmpty(ErrandNumber))
+        {
+            Errand = await errandDataService.GetErrand(ErrandNumber);
+            Errand.ErrandUpdates = Errand.ErrandUpdates.OrderByDescending(x => x.DateOfUpdate).ToList();
+        }
+        Employees = await employeeDataService.GetAllEmployeesAsync();
+
+        if (Errand.AssignedTechnicians != null && Errand.AssignedTechnicians.Count > 0)
+        {
+            var techs = new List<EmployeeViewModel>();
+
+            foreach (var tech in Errand.AssignedTechnicians)
+            {
+                techs.Add(new EmployeeViewModel
+                    {
+                        EmployeeNumber = tech.EmployeeNumber,
+                        FullName = tech.FullName
+                    });
+            }
+
+            selectedEmployees = techs;
+        }
+
+        var statuses = new Statuses();
+        Statuses = statuses.Status;
+    }
+
+    private async Task OnSubmit()
+    {
+        UserInput.ErrandNumber = Errand.ErrandNumber;
+
+        if (UserInput.EmployeeIds == null)
+            UserInput.EmployeeIds = new List<int>();
+
+        foreach (var employee in selectedEmployees)
+        {
+            if (UserInput.EmployeeIds.FirstOrDefault(x => x == employee.EmployeeNumber) == 0)
+                UserInput.EmployeeIds.Add(employee.EmployeeNumber);
+        }
+        var result = await errandDataService.PostErrandUpdateAsync(UserInput);
+
+        if (result)
+            await LoadDataAsync();
+        else
+            snackbar.Add("Something went wrong while updating the errand.", Severity.Error);
+    }
+
+    Func<EmployeeViewModel, string> Converter = p => p?.FullName!;
 }
