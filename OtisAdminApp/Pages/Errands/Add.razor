@@ -3,30 +3,43 @@
 
 @inject IElevatorDataService elevatorDataService
 @inject IEmployeeDataService employeeDataService
+@inject IErrandDataService errandDataService
+@inject ISnackbar snackbar
+@inject ILinkService linkService
+@inject NavigationManager navManager
 
 @if(isLoading)
 {
-    <MudProgressCircular Color="Color.Info" Indeterminate="true" Size="Size.Large"/>
+    <MudProgressCircular Class="ma-10 pa-10" Color="Color.Info" Indeterminate="true" Size="Size.Large"/>
 }
 else
 {
-    <MudPaper>
+    <MudPaper Class="ma-10 pa-10">
         <MudForm Model="@UserInput" @ref="@form" Validation="@(errandInputValidator.ValidateValue)" ValidationDelay="0">
-            <MudTextField @bind-Value="@UserInput.Title" Variant="Variant.Text"/>
-            <MudSelect T="Guid" Label="Elevator" AnchorOrigin="Origin.BottomCenter">
+            <MudTextField Class="mt-4" Label="Short description" @bind-Value="@UserInput.Title" Variant="Variant.Text" AdornmentColor="Color.Info" />
+            <MudSelect Class="mt-4" T="Guid" Label="Elevator" @bind-Value="@UserInput.ElevatorId" AnchorOrigin="Origin.BottomCenter" AdornmentColor="Color.Info">
                 @foreach (var elevator in Elevators)
                 {
                     <MudSelectItem T="Guid" Value="@elevator.Id"/>
                 }
             </MudSelect>
-            <MudSelect T="EmployeeViewModel" Label="Assign employees" @bind-SelectedValues="selectedEmployees" MultiSelection="true" >
+            <MudSelect Class="mt-4" T="EmployeeViewModel" Label="Assign employees" @bind-SelectedValues="selectedEmployees" MultiSelection="true">
                 @foreach(var employee in Employees)
                 {
                     <MudSelectItem T="EmployeeViewModel" Value="@employee" >@employee.FullName: @employee.EmployeeNumber</MudSelectItem>
                 }
             </MudSelect>
 
-            <MudButton OnClick="@(async () => await OnSubmit())">Create Errand</MudButton>
+            <MudSelect Class="mt-4" T="string" Label="Status" @bind-Value="@UpdateUserinput.Status" AnchorOrigin="Origin.BottomCenter">
+                @foreach(var status in Statuses)
+                {
+                    <MudSelectItem Value="@status">@status</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudTextField Class="mt-4" Label="Thorough description" @bind-Value="@UpdateUserinput.Message" Lines="8" />
+
+            <MudButton Variant="Variant.Filled" Color="Color.Info" Class="mt-4" OnClick="@(async () => await OnSubmit())">Create Errand</MudButton>
         </MudForm>
     </MudPaper>
 }
@@ -39,11 +52,16 @@ else
     MudForm? form;
 
     //Declares user input-variable
-    public ErrandInputModel UserInput = new ErrandInputModel();
+    public ErrandInputModel UserInput = new ErrandInputModel
+        {
+            ErrandUpdates = new List<ErrandUpdateInputModel>()
+    };
+    public ErrandUpdateInputModel UpdateUserinput = new ErrandUpdateInputModel();
 
     //Gets selectable values for select-list
     List<ElevatorViewModel> Elevators = new List<ElevatorViewModel>();
     List<EmployeeViewModel> Employees = new List<EmployeeViewModel>();
+    List<string> Statuses = new List<string>();
 
     private IEnumerable<EmployeeViewModel> selectedEmployees { get; set; } = new HashSet<EmployeeViewModel>();
 
@@ -59,11 +77,34 @@ else
             UserInput.ElevatorId = Guid.Parse(DeviceId);
 
         Employees = await employeeDataService.GetAllEmployeesAsync();
+        var statuses = new Statuses();
+        Statuses = statuses.Status;
+
         isLoading = false;
     }
 
     private async Task OnSubmit()
     {
-        
+        if(UserInput.ElevatorId != Guid.Empty)
+        {
+            UserInput.ErrandUpdates.Add(UpdateUserinput);
+            var result = await errandDataService.PostErrandAsync(UserInput);
+
+            if (result != null)
+                try
+                {
+                    navManager.NavigateTo(linkService.ViewErrand(result.ErrandNumber));
+                }
+                catch
+                {
+                    snackbar.Add("Something went wrong while redirecting you errand", Severity.Error);
+                }
+
+            snackbar.Add("Something went wrong while creating the errand.", Severity.Error);
+        }
+        else
+        {
+            snackbar.Add("No elevator has been selected.", Severity.Error);
+        }
     }
 }

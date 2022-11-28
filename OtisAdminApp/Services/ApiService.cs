@@ -1,12 +1,11 @@
-﻿using Newtonsoft.Json;
-using System.Text;
+﻿using System.Text;
 
 namespace OtisAdminApp.Services;
 
 public interface IApiService
 {
     public Task<string> GetAsync(string apiCall, IDictionary<string, string>? header);
-    public Task<string> PostAsync(string apiRoute, dynamic data);
+    public Task<string> PostAsync(string apiRoute, string data);
 }
 public class ApiService : IApiService
 {
@@ -41,11 +40,11 @@ public class ApiService : IApiService
         return null!;
     }
 
-    public async Task<string> PostAsync(string apiRoute, dynamic data)
+    public async Task<string> PostAsync(string apiRoute, string data)
     {
         try
         {
-            var request = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+            var request = new StringContent(data, Encoding.UTF8, "application/json");
 
 
             var result = await _httpClient.PostAsync(_baseAdress + apiRoute, request);

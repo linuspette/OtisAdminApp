@@ -8,6 +8,7 @@ public interface IEmployeeDataService
 {
     public Task<List<EmployeeViewModel>> GetAllEmployeesAsync();
     public Task<bool> SaveEmployeeAsync(EmployeeInputModel userInput);
+    public Task<List<ErrandUpdateEmployeeAddInputModel>> GetAllEmployeesBasicInfoAsync();
 }
 public class EmployeeDataService : IEmployeeDataService
 {
@@ -25,13 +26,21 @@ public class EmployeeDataService : IEmployeeDataService
         return JsonConvert.DeserializeObject<List<EmployeeViewModel>>(result) ?? null!;
     }
 
+    public async Task<List<ErrandUpdateEmployeeAddInputModel>> GetAllEmployeesBasicInfoAsync()
+    {
+        var result = await _apiService.GetAsync("employees/getemployees", null);
+
+        return JsonConvert.DeserializeObject<List<ErrandUpdateEmployeeAddInputModel>>(result) ?? null!;
+
+    }
+
     public async Task<bool> SaveEmployeeAsync(EmployeeInputModel userInput)
     {
-        var result = await _apiService.PostAsync("Employees/add", new EmployeePost
+        var result = await _apiService.PostAsync("Employees/add", JsonConvert.SerializeObject(new EmployeePost
         {
             EmployeeNumber = userInput.EmployeeNumber,
             FullName = $"{userInput.FirstName} {userInput.LastName}"
-        });
+        }));
 
         if (result == "0")
             return true;
