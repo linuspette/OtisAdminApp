@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <Folder Include="Infrastructure\FluentValidation\Employees\" />
+    <Folder Include="Infrastructure\Status\" />
     <Folder Include="Models\" />
   </ItemGroup>
 

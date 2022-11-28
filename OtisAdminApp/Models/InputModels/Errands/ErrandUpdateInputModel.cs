@@ -1,12 +1,12 @@
-﻿using OtisAdminApp.Models.ViewModels.Users;
+﻿using Newtonsoft.Json;
+using OtisAdminApp.Models.ViewModels.Users;
 
 namespace OtisAdminApp.Models.InputModels.Errands;
 
 public class ErrandUpdateInputModel
 {
-    public string ErrandNumber { get; set; } = null!;
-    public string Status { get; set; } = null!;
-    public string Message { get; set; } = null!;
-    public bool IsResolved { get; set; }
-    public List<EmployeeViewModel>? Employees { get; set; }
+    [JsonProperty("status")] public string Status { get; set; } = null!;
+    [JsonProperty("message")] public string Message { get; set; } = null!;
+    [JsonProperty("isResolved")] public bool IsResolved { get; set; }
+    [JsonProperty("employees")] public List<EmployeeViewModel>? Employees { get; set; }
 }
