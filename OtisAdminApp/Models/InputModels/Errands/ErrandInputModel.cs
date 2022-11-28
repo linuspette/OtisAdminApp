@@ -1,9 +1,11 @@
-﻿namespace OtisAdminApp.Models.InputModels.Errands;
+﻿using Newtonsoft.Json;
+
+namespace OtisAdminApp.Models.InputModels.Errands;
 
 public class ErrandInputModel
 {
-    public string Title { get; set; } = null!;
-    public Guid ElevatorId { get; set; }
-    public List<ErrandUpdateInputModel> ErrandUpdates { get; set; } = null!;
-    public bool IsResolved { get; set; } = false;
+    [JsonProperty("title")] public string Title { get; set; } = null!;
+    [JsonProperty("elevatorId")] public Guid ElevatorId { get; set; }
+    [JsonProperty("errandUpdates")] public List<ErrandUpdateInputModel> ErrandUpdates { get; set; } = null!;
+    [JsonProperty("isResolved")] public bool IsResolved { get; set; } = false;
 }
