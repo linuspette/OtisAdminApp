@@ -49,43 +49,38 @@ public class ApiService : IApiService
     //Post Method
     public async Task<string> PostAsync(string apiRoute, dynamic data)
     {
-        using (var _httpClient = new HttpClient())
+        using var _httpClient = new HttpClient();
+        try
         {
-            try
-            {
-                var request = new StringContent(data, Encoding.UTF8, "application/json");
+            var request = new StringContent(data, Encoding.UTF8, "application/json");
 
 
-                var result = await _httpClient.PostAsync(_baseAdress + apiRoute, request);
-                _logger.LogWarning($"Result from api: {await result.Content.ReadAsStringAsync()}");
-                return await result.Content.ReadAsStringAsync();
-            }
-            catch { }
-            return null!;
-
+            var result = await _httpClient.PostAsync(_baseAdress + apiRoute, request);
+            _logger.LogWarning($"Result from api: {await result.Content.ReadAsStringAsync()}");
+            return await result.Content.ReadAsStringAsync();
         }
+        catch { }
+        return null!;
     }
 
     //Delete Method
     public async Task<string> DeleteAsync(string apiCall, IDictionary<string, string> header)
     {
-        using (var _httpClient = new HttpClient())
+        using var _httpClient = new HttpClient();
+        try
         {
-            try
+            var request = new HttpRequestMessage(HttpMethod.Delete, _baseAdress + apiCall);
+
+            foreach (var variable in header)
             {
-                var request = new HttpRequestMessage(HttpMethod.Delete, _baseAdress + apiCall);
-
-                foreach (var variable in header)
-                {
-                    request.Headers.Add(variable.Key, header.Values);
-                }
-
-                var result = await _httpClient.SendAsync(request);
-
-                return await result.Content.ReadAsStringAsync();
+                request.Headers.Add(variable.Key, header.Values);
             }
-            catch { }
-            return null!;
+
+            var result = await _httpClient.SendAsync(request);
+
+            return await result.Content.ReadAsStringAsync();
         }
+        catch { }
+        return null!;
     }
 }
