@@ -5,7 +5,8 @@
 @inject ISnackbar snackbar;
 @inject IDialogService dialogService;
 @inject ILinkService linkService;
-@inject NavigationManager navManager
+@inject NavigationManager navManager;
+@inject ILogger<View> logger;
 
 <MudPaper Class="mr-4 ml-4">
     @if (isLoading)
@@ -142,8 +143,15 @@
         await LoadDataAsync();
         isLoading = false;
         StateHasChanged();
+    }
 
-        await Timer_LoadDataAsync();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Timer_LoadDataAsync();
+            StateHasChanged();
+        }
     }
     //Reloads data every 10 seconds
     private async Task Timer_LoadDataAsync()
@@ -186,6 +194,7 @@
 
     private async Task OnSubmit()
     {
+        logger.LogWarning("OnSubmit has been triggered");
         UserInput.ErrandNumber = Errand.ErrandNumber;
 
         if (UserInput.EmployeeIds == null)
@@ -197,11 +206,10 @@
                 UserInput.EmployeeIds.Add(employee.EmployeeNumber);
         }
         var result = await errandDataService.PostErrandUpdateAsync(UserInput);
-
+        logger.LogWarning($"Result from errandDataService: {result}");
         if (result)
         {
             await LoadDataAsync();
-
         }
         else
             snackbar.Add("Something went wrong while updating the errand.", Severity.Error);
