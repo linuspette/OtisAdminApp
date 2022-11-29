@@ -21,25 +21,23 @@ public class ApiService : IApiService
     //Get Method
     public async Task<string> GetAsync(string apiCall, IDictionary<string, string>? header)
     {
-        using (var _httpClient = new HttpClient())
+        using var _httpClient = new HttpClient();
+        try
         {
-            try
+            var request = new HttpRequestMessage(HttpMethod.Get, _baseAdress + apiCall);
+            if (header != null)
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, _baseAdress + apiCall);
-                if (header != null)
-                {
-                    request.Headers.Add(header.Keys.First(), header.Values.First());
-                }
-
-
-                var result = await _httpClient.SendAsync(request) ?? null!;
-
-                return await result.Content.ReadAsStringAsync();
+                request.Headers.Add(header.Keys.First(), header.Values.First());
             }
-            catch (Exception ex)
-            {
-                var message = ex.Message;
-            }
+
+
+            var result = await _httpClient.SendAsync(request) ?? null!;
+
+            return await result.Content.ReadAsStringAsync();
+        }
+        catch (Exception ex)
+        {
+            var message = ex.Message;
         }
 
 
@@ -52,10 +50,16 @@ public class ApiService : IApiService
         using var _httpClient = new HttpClient();
         try
         {
-            var request = new StringContent(data, Encoding.UTF8, "application/json");
 
 
-            var result = await _httpClient.PostAsync(_baseAdress + apiRoute, request);
+            var request = new HttpRequestMessage(HttpMethod.Post, new Uri($"{_baseAdress}{apiRoute}"))
+            {
+                Content = new StringContent(data, Encoding.UTF8, "application/json")
+            };
+            _logger.LogWarning($"Result from request creation: {await request.Content.ReadAsStringAsync()}");
+
+
+            var result = await _httpClient.SendAsync(request);
             _logger.LogWarning($"Result from api: {await result.Content.ReadAsStringAsync()}");
             return await result.Content.ReadAsStringAsync();
         }
