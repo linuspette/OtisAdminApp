@@ -10,11 +10,13 @@ public interface IApiService
 }
 public class ApiService : IApiService
 {
+    private readonly ILogger<ApiService> _logger;
     private readonly HttpClient _httpClient;
     private readonly string _baseAdress = "https://otisagileapi.azurewebsites.net/api/";
 
-    public ApiService()
+    public ApiService(ILogger<ApiService> logger)
     {
+        _logger = logger;
         _httpClient = new HttpClient();
     }
 
@@ -51,7 +53,7 @@ public class ApiService : IApiService
 
 
             var result = await _httpClient.PostAsync(_baseAdress + apiRoute, request);
-
+            _logger.LogWarning($"Result from api: {await result.Content.ReadAsStringAsync()}");
             return await result.Content.ReadAsStringAsync();
         }
         catch { }
