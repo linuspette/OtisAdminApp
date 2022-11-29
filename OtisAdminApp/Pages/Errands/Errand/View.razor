@@ -145,12 +145,12 @@
 
         await Timer_LoadDataAsync();
     }
-    //Reloads data every 30 seconds
+    //Reloads data every 10 seconds
     private async Task Timer_LoadDataAsync()
     {
         while (true)
         {
-            await Task.Delay(30000);
+            await Task.Delay(10000);
             await LoadDataAsync();
         }
     }
@@ -197,8 +197,6 @@
                 UserInput.EmployeeIds.Add(employee.EmployeeNumber);
         }
         var result = await errandDataService.PostErrandUpdateAsync(UserInput);
-        UserInput.ClearData();
-        StateHasChanged();
 
         if (result)
         {
