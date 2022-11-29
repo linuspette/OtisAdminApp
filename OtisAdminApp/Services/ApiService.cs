@@ -11,17 +11,19 @@ public interface IApiService
 public class ApiService : IApiService
 {
     private readonly ILogger<ApiService> _logger;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly string _baseAdress = "https://otisagileapi.azurewebsites.net/api/";
 
-    public ApiService(ILogger<ApiService> logger)
+    public ApiService(ILogger<ApiService> logger, IHttpClientFactory httpClientFactory)
     {
         _logger = logger;
+        _httpClientFactory = httpClientFactory;
     }
 
     //Get Method
     public async Task<string> GetAsync(string apiCall, IDictionary<string, string>? header)
     {
-        using var _httpClient = new HttpClient();
+        using var _httpClient = _httpClientFactory.CreateClient("ApiGetClient");
         try
         {
             var request = new HttpRequestMessage(HttpMethod.Get, _baseAdress + apiCall);
@@ -47,7 +49,7 @@ public class ApiService : IApiService
     //Post Method
     public async Task<string> PostAsync(string apiRoute, dynamic data)
     {
-        using var _httpClient = new HttpClient();
+        using var _httpClient = _httpClientFactory.CreateClient("ApiPostClient");
         try
         {
             var request = new HttpRequestMessage(HttpMethod.Post, new Uri($"{_baseAdress}{apiRoute}"))
@@ -71,7 +73,7 @@ public class ApiService : IApiService
     //Delete Method
     public async Task<string> DeleteAsync(string apiCall, IDictionary<string, string> header)
     {
-        using var _httpClient = new HttpClient();
+        using var _httpClient = _httpClientFactory.CreateClient("ApiDeleteClient");
         try
         {
             var request = new HttpRequestMessage(HttpMethod.Delete, _baseAdress + apiCall);
