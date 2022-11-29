@@ -9,4 +9,12 @@ public class ErrandUpdateInputModel
     [JsonProperty("message")] public string Message { get; set; } = null!;
     [JsonProperty("isResolved")] public bool IsResolved { get; set; }
     [JsonProperty("employeeIds")] public List<int>? EmployeeIds { get; set; }
+
+    public void ClearData()
+    {
+        ErrandNumber = "";
+        Status = "";
+        Message = "";
+        EmployeeIds = null!;
+    }
 }
