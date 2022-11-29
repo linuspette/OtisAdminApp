@@ -50,8 +50,6 @@ public class ApiService : IApiService
         using var _httpClient = new HttpClient();
         try
         {
-
-
             var request = new HttpRequestMessage(HttpMethod.Post, new Uri($"{_baseAdress}{apiRoute}"))
             {
                 Content = new StringContent(data, Encoding.UTF8, "application/json")
@@ -63,7 +61,10 @@ public class ApiService : IApiService
             _logger.LogWarning($"Result from api: {await result.Content.ReadAsStringAsync()}");
             return await result.Content.ReadAsStringAsync();
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex.Message);
+        }
         return null!;
     }
 
