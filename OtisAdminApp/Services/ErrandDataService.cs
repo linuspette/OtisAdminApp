@@ -10,6 +10,7 @@ public interface IErrandDataService
     public Task<ErrandViewModel> GetErrand(string errandNumber);
     public Task<ErrandViewModel> PostErrandAsync(ErrandInputModel userInput);
     public Task<bool> PostErrandUpdateAsync(ErrandUpdateInputModel userInput);
+    public Task<bool> DeleteErrandAsync(string errandNumber);
 }
 public class ErrandDataService : IErrandDataService
 {
@@ -42,7 +43,9 @@ public class ErrandDataService : IErrandDataService
 
     public async Task<ErrandViewModel> PostErrandAsync(ErrandInputModel userInput)
     {
-        var result = await _apiService.PostAsync("errands/createerrand", JsonConvert.SerializeObject(userInput));
+
+
+        var result = await _apiService.PostAsync("errands/createerrand", JsonConvert.SerializeObject(userInput, Formatting.Indented));
 
         return JsonConvert.DeserializeObject<ErrandViewModel>(result) ?? null!;
     }
@@ -57,6 +60,19 @@ public class ErrandDataService : IErrandDataService
                 return true;
         }
 
+        return false;
+    }
+
+    public async Task<bool> DeleteErrandAsync(string errandNumber)
+    {
+        var result = await _apiService.DeleteAsync("errands/deleteerrand",
+            new Dictionary<string, string> { { "errandNumber", errandNumber } });
+
+        if (!string.IsNullOrEmpty(result))
+        {
+            if (result == "0")
+                return true;
+        }
         return false;
     }
 }

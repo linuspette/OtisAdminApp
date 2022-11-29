@@ -3,6 +3,9 @@
 @inject IEmployeeDataService employeeDataService;
 @inject IErrandDataService errandDataService;
 @inject ISnackbar snackbar;
+@inject IDialogService dialogService;
+@inject ILinkService linkService;
+@inject NavigationManager navManager
 
 <MudPaper Class="mr-4 ml-4">
     @if (isLoading)
@@ -19,7 +22,7 @@
                     <MudTextField Label="Errand Number" ReadOnly="true" Value="@Errand.ErrandNumber" Variant="Variant.Outlined"></MudTextField>
                 </MudItem>
                 <!--Tech field-->
-                <MudItem xs="6">
+                <MudItem xs="4">
                     <MudExpansionPanels>
                         <MudExpansionPanel Text="Assigned Technicians">
                             @if (Errand.AssignedTechnicians != null && Errand.AssignedTechnicians.Count > 0)
@@ -31,6 +34,10 @@
                             }
                         </MudExpansionPanel>
                     </MudExpansionPanels>
+                </MudItem>
+                <!--Delete button-->
+                <MudItem xs="2">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(async () => await OnDelete())"></MudIconButton>
                 </MudItem>
                 <!--Status field-->
                 <MudItem xs="6">
@@ -63,10 +70,6 @@
                 <MudItem xs="6" Class="d-flex flex-column">
                     <MudText Typo="Typo.h6">Errand Updates</MudText>
                     <MudCard Class="pt-8 mt-8 overflow-scroll" Style="max-height: 50%; width: 100%;">
-                        <MudCardHeader>
-
-                            <MudDivider />
-                        </MudCardHeader>
                         <MudCardContent>
                             @foreach (var update in Errand.ErrandUpdates)
                             {
@@ -87,7 +90,7 @@
 
                 <!--Update form-->
                 <MudItem xs="6" Class="overflow-hidden object-contain">
-                    <MudForm Class="d-block overflow-hidden object-contain" Style="max-height: 50%;" Model="@UserInput" @ref="@form" Validation="@(errandUpdateValidator.ValidateValue)" ValidationDelay="0">
+                    <MudForm Class="d-block" Style="max-height: 50%;" Model="@UserInput" @ref="@form" Validation="@(errandUpdateValidator.ValidateValue)" ValidationDelay="0">
                         <MudSelect Class="mt-4" T="EmployeeViewModel" Label="Assign employees" @bind-Value="@Value" ToStringFunc="Converter" @bind-SelectedValues="selectedEmployees" MultiSelection="true">
                             @foreach (var employee in Employees)
                             {
@@ -101,8 +104,8 @@
                                 <MudSelectItem Value="@status">@status</MudSelectItem>
                             }
                         </MudSelect>
-
                         <MudTextField Class="mt-4" Label="Thorough description" @bind-Value="@UserInput.Message" Lines="8" />
+                        <MudCheckBox @bind-Checked="@UserInput.IsResolved" Color="Color.Info" Label="Errand resolved?" />
                         <MudButton Class="mt-4" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Info" OnClick="@(async () => await OnSubmit())">Update Errand</MudButton>
                     </MudForm>
                 </MudItem>
@@ -194,11 +197,37 @@
                 UserInput.EmployeeIds.Add(employee.EmployeeNumber);
         }
         var result = await errandDataService.PostErrandUpdateAsync(UserInput);
+        UserInput.ClearData();
+        StateHasChanged();
 
         if (result)
+        {
             await LoadDataAsync();
+
+        }
         else
             snackbar.Add("Something went wrong while updating the errand.", Severity.Error);
+    }
+
+    private async Task OnDelete()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("Errand", Errand);
+
+        var dialog = dialogService.Show<DeleteErrand_Dialog>("Delete Errand", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            if (await errandDataService.DeleteErrandAsync(Errand.ErrandNumber))
+            {
+                navManager.NavigateTo(linkService.ViewErrands());
+            }
+            else
+            {
+                snackbar.Add("Something went wrong while deleting the errand.", Severity.Error);
+            }
+        }
     }
 
     Func<EmployeeViewModel, string> Converter = p => p?.FullName!;
