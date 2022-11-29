@@ -1,11 +1,13 @@
 ﻿@page "/errands/errand/view/{ErrandNumber}";
+@using Newtonsoft.Json;
 
 @inject IEmployeeDataService employeeDataService;
 @inject IErrandDataService errandDataService;
 @inject ISnackbar snackbar;
 @inject IDialogService dialogService;
 @inject ILinkService linkService;
-@inject NavigationManager navManager
+@inject NavigationManager navManager;
+@inject ILogger<View> logger;
 
 <MudPaper Class="mr-4 ml-4">
     @if (isLoading)
@@ -142,15 +144,22 @@
         await LoadDataAsync();
         isLoading = false;
         StateHasChanged();
-
-        await Timer_LoadDataAsync();
     }
-    //Reloads data every 30 seconds
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Timer_LoadDataAsync();
+            StateHasChanged();
+        }
+    }
+    //Reloads data every 10 seconds
     private async Task Timer_LoadDataAsync()
     {
         while (true)
         {
-            await Task.Delay(30000);
+            await Task.Delay(10000);
             await LoadDataAsync();
         }
     }
@@ -186,6 +195,7 @@
 
     private async Task OnSubmit()
     {
+        logger.LogWarning("OnSubmit has been triggered");
         UserInput.ErrandNumber = Errand.ErrandNumber;
 
         if (UserInput.EmployeeIds == null)
@@ -196,14 +206,12 @@
             if (UserInput.EmployeeIds.FirstOrDefault(x => x == employee.EmployeeNumber) == 0)
                 UserInput.EmployeeIds.Add(employee.EmployeeNumber);
         }
+        logger.LogWarning($"Data sent into post: {JsonConvert.SerializeObject(UserInput)}");
         var result = await errandDataService.PostErrandUpdateAsync(UserInput);
-        UserInput.ClearData();
-        StateHasChanged();
-
+        logger.LogWarning($"Result from errandDataService: {result}");
         if (result)
         {
             await LoadDataAsync();
-
         }
         else
             snackbar.Add("Something went wrong while updating the errand.", Severity.Error);

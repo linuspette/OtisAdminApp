@@ -8,12 +8,15 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-builder.Services.AddScoped<IApiService, ApiService>();
-builder.Services.AddScoped<ILinkService, LinkService>();
-builder.Services.AddScoped<IElevatorDataService, ElevatorDataService>();
-builder.Services.AddScoped<IErrandDataService, ErrandDataService>();
-builder.Services.AddScoped<IEmployeeDataService, EmployeeDataService>();
+builder.Logging.SetMinimumLevel(LogLevel.Warning);
+
+builder.Services.AddHttpClient();
+
+builder.Services.AddTransient<IApiService, ApiService>();
+builder.Services.AddTransient<ILinkService, LinkService>();
+builder.Services.AddTransient<IElevatorDataService, ElevatorDataService>();
+builder.Services.AddTransient<IErrandDataService, ErrandDataService>();
+builder.Services.AddTransient<IEmployeeDataService, EmployeeDataService>();
 builder.Services.AddMudServices();
 
 

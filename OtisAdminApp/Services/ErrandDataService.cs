@@ -15,10 +15,12 @@ public interface IErrandDataService
 public class ErrandDataService : IErrandDataService
 {
     private readonly IApiService _apiService;
+    private readonly ILogger<ErrandDataService> _logger;
 
-    public ErrandDataService(IApiService apiService)
+    public ErrandDataService(IApiService apiService, ILogger<ErrandDataService> logger)
     {
         _apiService = apiService;
+        _logger=logger;
     }
 
     public async Task<List<ErrandViewModel>> GetAllElevatorErrands(string deviceId = null!)
@@ -52,7 +54,10 @@ public class ErrandDataService : IErrandDataService
 
     public async Task<bool> PostErrandUpdateAsync(ErrandUpdateInputModel userInput)
     {
+        _logger.LogWarning("Post errand update triggered");
         var result = await _apiService.PostAsync("errands/updateerrand", JsonConvert.SerializeObject(userInput));
+
+        _logger.LogWarning($"Post result: {result}");
 
         if (!string.IsNullOrEmpty(result))
         {
