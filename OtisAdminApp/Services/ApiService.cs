@@ -5,7 +5,7 @@ namespace OtisAdminApp.Services;
 public interface IApiService
 {
     public Task<string> GetAsync(string apiCall, IDictionary<string, string>? header);
-    public Task<string> PostAsync(string apiRoute, dynamic data);
+    public Task<string> PostAsync(string apiRoute, string data);
     public Task<string> DeleteAsync(string apiCall, IDictionary<string, string> header);
 }
 public class ApiService : IApiService
@@ -47,27 +47,28 @@ public class ApiService : IApiService
     }
 
     //Post Method
-    public async Task<string> PostAsync(string apiRoute, dynamic data)
+    public async Task<string> PostAsync(string apiRoute, string data)
     {
         using var _httpClient = _httpClientFactory.CreateClient("ApiPostClient");
-        try
+        _logger.LogWarning($"Created http client");
+        var request = new HttpRequestMessage(HttpMethod.Post, new Uri($"{_baseAdress}{apiRoute}"))
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, new Uri($"{_baseAdress}{apiRoute}"))
-            {
-                Content = new StringContent(data, Encoding.UTF8, "application/json")
-            };
-            _logger.LogWarning($"Result from request creation: {await request.Content.ReadAsStringAsync()}");
+            Content = new StringContent(data, Encoding.UTF8, "application/json")
+        };
+        _logger.LogWarning($"Result from request creation: {await request.Content.ReadAsStringAsync()}");
 
 
-            var result = await _httpClient.SendAsync(request);
-            _logger.LogWarning($"Result from api: {await result.Content.ReadAsStringAsync()}");
-            return await result.Content.ReadAsStringAsync();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogCritical(ex.Message);
-        }
-        return null!;
+        var result = await _httpClient.SendAsync(request);
+        _logger.LogWarning($"Result from api: {await result.Content.ReadAsStringAsync()}");
+        return await result.Content.ReadAsStringAsync();
+        //try
+        //{
+        //}
+        //catch (Exception ex)
+        //{
+        //    _logger.LogCritical(ex.Message);
+        //}
+        //return null!;
     }
 
     //Delete Method

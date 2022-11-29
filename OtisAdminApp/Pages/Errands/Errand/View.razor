@@ -151,7 +151,6 @@
         if (firstRender)
         {
             await Timer_LoadDataAsync();
-            StateHasChanged();
         }
     }
     //Reloads data every 10 seconds
@@ -161,6 +160,7 @@
         {
             await Task.Delay(10000);
             await LoadDataAsync();
+            StateHasChanged();
         }
     }
 
