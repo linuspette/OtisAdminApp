@@ -5,7 +5,8 @@ namespace OtisAdminApp.Services;
 public interface IApiService
 {
     public Task<string> GetAsync(string apiCall, IDictionary<string, string>? header);
-    public Task<string> PostAsync(string apiRoute, string data);
+    public Task<string> PostAsync(string apiRoute, dynamic data);
+    public Task<string> DeleteAsync(string apiCall, IDictionary<string, string> header);
 }
 public class ApiService : IApiService
 {
@@ -17,6 +18,7 @@ public class ApiService : IApiService
         _httpClient = new HttpClient();
     }
 
+    //Get Method
     public async Task<string> GetAsync(string apiCall, IDictionary<string, string>? header)
     {
         try
@@ -40,7 +42,8 @@ public class ApiService : IApiService
         return null!;
     }
 
-    public async Task<string> PostAsync(string apiRoute, string data)
+    //Post Method
+    public async Task<string> PostAsync(string apiRoute, dynamic data)
     {
         try
         {
@@ -48,6 +51,26 @@ public class ApiService : IApiService
 
 
             var result = await _httpClient.PostAsync(_baseAdress + apiRoute, request);
+
+            return await result.Content.ReadAsStringAsync();
+        }
+        catch { }
+        return null!;
+    }
+
+    //Delete Method
+    public async Task<string> DeleteAsync(string apiCall, IDictionary<string, string> header)
+    {
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Delete, _baseAdress + apiCall);
+
+            foreach (var variable in header)
+            {
+                request.Headers.Add(variable.Key, header.Values);
+            }
+
+            var result = await _httpClient.SendAsync(request);
 
             return await result.Content.ReadAsStringAsync();
         }

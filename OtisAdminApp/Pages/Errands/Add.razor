@@ -8,9 +8,9 @@
 @inject ILinkService linkService
 @inject NavigationManager navManager
 
-@if(isLoading)
+@if (isLoading)
 {
-    <MudProgressCircular Class="ma-10 pa-10" Color="Color.Info" Indeterminate="true" Size="Size.Large"/>
+    <MudProgressCircular Class="ma-10 pa-10" Color="Color.Info" Indeterminate="true" Size="Size.Large" />
 }
 else
 {
@@ -20,24 +20,18 @@ else
             <MudSelect Class="mt-4" T="Guid" Label="Elevator" @bind-Value="@UserInput.ElevatorId" AnchorOrigin="Origin.BottomCenter" AdornmentColor="Color.Info">
                 @foreach (var elevator in Elevators)
                 {
-                    <MudSelectItem T="Guid" Value="@elevator.Id"/>
-                }
-            </MudSelect>
-            <MudSelect Class="mt-4" T="EmployeeViewModel" Label="Assign employees" @bind-SelectedValues="selectedEmployees" MultiSelection="true">
-                @foreach(var employee in Employees)
-                {
-                    <MudSelectItem T="EmployeeViewModel" Value="@employee" >@employee.FullName: @employee.EmployeeNumber</MudSelectItem>
+                    <MudSelectItem T="Guid" Value="@elevator.Id" />
                 }
             </MudSelect>
 
-            <MudSelect Class="mt-4" T="string" Label="Status" @bind-Value="@UpdateUserinput.Status" AnchorOrigin="Origin.BottomCenter">
-                @foreach(var status in Statuses)
+            <MudSelect Class="mt-4" T="string" Label="Status" @bind-Value="@UserInput.ErrandUpdates.Status" AnchorOrigin="Origin.BottomCenter">
+                @foreach (var status in Statuses)
                 {
                     <MudSelectItem Value="@status">@status</MudSelectItem>
                 }
             </MudSelect>
 
-            <MudTextField Class="mt-4" Label="Thorough description" @bind-Value="@UpdateUserinput.Message" Lines="8" />
+            <MudTextField Class="mt-4" Label="Thorough description" @bind-Value="@UserInput.ErrandUpdates.Message" Lines="8" />
 
             <MudButton Variant="Variant.Filled" Color="Color.Info" Class="mt-4" OnClick="@(async () => await OnSubmit())">Create Errand</MudButton>
         </MudForm>
@@ -54,16 +48,12 @@ else
     //Declares user input-variable
     public ErrandInputModel UserInput = new ErrandInputModel
         {
-            ErrandUpdates = new List<ErrandUpdateInputModel>()
-    };
-    public ErrandUpdateInputModel UpdateUserinput = new ErrandUpdateInputModel();
+            ErrandUpdates = new ErrandUpdateCreationModel()
+        };
 
     //Gets selectable values for select-list
     List<ElevatorViewModel> Elevators = new List<ElevatorViewModel>();
-    List<EmployeeViewModel> Employees = new List<EmployeeViewModel>();
     List<string> Statuses = new List<string>();
-
-    private IEnumerable<EmployeeViewModel> selectedEmployees { get; set; } = new HashSet<EmployeeViewModel>();
 
     //Fluent validators
     ErrandInputModelFluentValidator errandInputValidator = new ErrandInputModelFluentValidator();
@@ -76,7 +66,6 @@ else
         if (!string.IsNullOrEmpty(DeviceId))
             UserInput.ElevatorId = Guid.Parse(DeviceId);
 
-        Employees = await employeeDataService.GetAllEmployeesAsync();
         var statuses = new Statuses();
         Statuses = statuses.Status;
 
@@ -85,12 +74,12 @@ else
 
     private async Task OnSubmit()
     {
-        if(UserInput.ElevatorId != Guid.Empty)
+        if (UserInput.ElevatorId != Guid.Empty)
         {
-            UserInput.ErrandUpdates.Add(UpdateUserinput);
             var result = await errandDataService.PostErrandAsync(UserInput);
 
             if (result != null)
+            {
                 try
                 {
                     navManager.NavigateTo(linkService.ViewErrand(result.ErrandNumber));
@@ -100,7 +89,11 @@ else
                     snackbar.Add("Something went wrong while redirecting you errand", Severity.Error);
                 }
 
-            snackbar.Add("Something went wrong while creating the errand.", Severity.Error);
+            }
+            else
+            {
+                snackbar.Add("Something went wrong while creating the errand.", Severity.Error);
+            }
         }
         else
         {

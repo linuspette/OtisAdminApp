@@ -1,0 +1,30 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Class="mr-3 mb-n1" />
+            Delete errand?
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField Value="@Errand.ErrandNumber" Label="Errand Number" ReadOnly="true" />
+        <MudTextField Value="@Errand.Elevator.Id.ToString()" Label="Elevator Id" ReadOnly="true" />
+        <MudTextField Value="@Errand.Title" Label="Title" ReadOnly="true" />
+        <MudTextField Value="@Errand.IsResolved" Label="Is Resolved?" ReadOnly="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Error" OnClick="DeleteErrand">Delete Errand</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public ErrandViewModel Errand { get; set; } = new ErrandViewModel();
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+    private void DeleteErrand()
+    {
+        MudDialog.Close(DialogResult.Ok(Errand.ErrandNumber));
+    }
+}
